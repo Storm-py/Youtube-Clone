@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from 'fs'
+import { ApiError } from "./ApiError.js";
 
 cloudinary.config({ 
     cloud_name: 'dq9ggzi8h', 
@@ -21,5 +22,17 @@ const uploadOnCLoudinary=async (localFilePath)=>{
         return null
     }
 }
+const deleteFromCloudinary=async(localFilePath)=>{
+    try {
+        if (!localFilePath) throw new ApiError(400,"Path not Available")
+        const response=await cloudinary.uploader.destroy(localFilePath,(error,result)=>{
+            console.log(error,result)
+    })
+        return response
+    } catch (error) {
+        console.log(error)
+        return null
+    }
+}
 
-export {uploadOnCLoudinary}
+export {uploadOnCLoudinary,deleteFromCloudinary}
