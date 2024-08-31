@@ -8,17 +8,17 @@ cloudinary.config({
     api_secret: '-BOscKVwt8jO8SZ0-LuoTVTec0I'
 });
 
-const uploadOnCLoudinary=async (localFilePath)=>{
+const uploadOnCloudinary=async (localFilePath)=>{
     try{
         if(!localFilePath)return null
         const response= await cloudinary.uploader.upload(localFilePath,{
             resource_type:'auto'
         })
+        if(!response) throw new ApiError(400,"Response is empty")
         fs.unlinkSync(localFilePath)
         return response
     }catch(error){
-        console.log(error)
-        fs.unlinkSync(localFilePath)
+
         return null
     }
 }
@@ -30,9 +30,8 @@ const deleteFromCloudinary=async(localFilePath)=>{
     })
         return response
     } catch (error) {
-        console.log(error)
         return null
     }
 }
 
-export {uploadOnCLoudinary,deleteFromCloudinary}
+export {uploadOnCloudinary,deleteFromCloudinary}

@@ -1,7 +1,7 @@
-import asyncHandler from '../utils/asyncHandler.js'
+import {asyncHandler} from '../utils/asyncHandler.js'
 import {ApiError} from '../utils/ApiError.js'
 import {User} from "../models/user.model.js"
-import {deleteFromCloudinary, uploadOnCLoudinary} from '../utils/cloudinary.js'
+import {deleteFromCloudinary, uploadOnCloudinary} from '../utils/cloudinary.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
@@ -38,6 +38,7 @@ const registerUser=asyncHandler(async (req,res)=>{
 
     const avatarLocalPath= req.files?.avatar[0]?.path;
     // const coverImageLocalPath= req.files?.coverImage[0]?.path ;
+    console.log(req.files)
 
     let coverImageLocalPath;
     if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0 ){
@@ -45,8 +46,8 @@ const registerUser=asyncHandler(async (req,res)=>{
     }
     if(!avatarLocalPath) {throw new ApiError(400,"Avatar Required")}
 
-    const avatar=await uploadOnCLoudinary(avatarLocalPath)
-    const coverImage=await uploadOnCLoudinary(coverImageLocalPath)
+    const avatar=await uploadOnCloudinary(avatarLocalPath)
+    const coverImage=await uploadOnCloudinary(coverImageLocalPath)
 
     if(!avatar) throw new ApiError('400',"Avatar not Uploaded")
 
@@ -68,13 +69,6 @@ const registerUser=asyncHandler(async (req,res)=>{
 )
 })
 const loginUser=asyncHandler(async (req,res)=>{
-    //Getting the details from the User
-    //Checking if the username is valid
-    //Checking if the password works on that username
-    //Getting the username and its password from the Database
-    //If both are correct then give response of the user 
-    //Giving refresh Token and activate Token to the user
-    //Login using Tokens
 
     const {username,email,password}=req.body
 
@@ -304,11 +298,10 @@ const updateUserAvatar=asyncHandler(async (req,res)=>{
     const url=avatar.split('/')
     avatar=url.pop()
     avatar=avatar.split('.')[0]
-    console.log(avatar)
     await deleteFromCloudinary(avatar) 
     const avatarLocalPath=req.file?.path
     if(!avatarLocalPath) throw new ApiError(400,"Avatar file is missing")
-    avatar=await uploadOnCLoudinary(avatarLocalPath)
+    avatar=await uploadOnCloudinary(avatarLocalPath)
     if(!avatar) throw new ApiError(400,"file not found")
     user.avatar=avatar.url
     await user.save()
