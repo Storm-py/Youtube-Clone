@@ -23,7 +23,10 @@ const uploadOnCloudinary=async (localFilePath)=>{
     }
 }
 const deleteFromCloudinary=async(localFilePath)=>{
+        
     try {
+        let new_url=localFilePath.split('/').pop()
+        localFilePath=new_url.split('.')[0]
         if (!localFilePath) throw new ApiError(400,"Path not Available")
         const response=await cloudinary.uploader.destroy(localFilePath,(error,result)=>{
             console.log(error,result)

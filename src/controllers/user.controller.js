@@ -295,9 +295,7 @@ const updateAccountDetails=asyncHandler(async (req,res)=>{
 const updateUserAvatar=asyncHandler(async (req,res)=>{
     const user=await User.findById(req.user._id)
     let avatar=user.avatar
-    const url=avatar.split('/')
-    avatar=url.pop()
-    avatar=avatar.split('.')[0]
+    
     await deleteFromCloudinary(avatar) 
     const avatarLocalPath=req.file?.path
     if(!avatarLocalPath) throw new ApiError(400,"Avatar file is missing")

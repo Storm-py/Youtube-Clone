@@ -4,7 +4,7 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
   let { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
@@ -14,7 +14,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
   let allVideos
   if(!query){
     allVideos=await Video.find().skip(skip).limit(limit)
-
   }
   
   const searchCriteria={
@@ -64,21 +63,42 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 const getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  //TODO: get video by id
+  if(!videoId) throw new ApiError(400,"Id not found")
+  const video= await Video.findById(videoId)
+  if(!video) throw new ApiError(400,"Video not found")
+  res.status(200)
+  .json(
+    new ApiResponse(200,{video},"Video Fetched Successfully")
+  )
 });
 
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  //TODO: update video details like title, description, thumbnail
+  const {title,description}=req.body
+  if(!videoId) throw new ApiError(400,"Video not found")
+  if(!title || !description) throw new ApiError(400,"Title or description is missing")
+  const video=await Video.findById(new mongoose.Types.ObjectId(videoId))
+  video.title=title
+  const thumbnailLocalPath=req.file.path
+  let thumbnail=await uploadOnCloudinary(thumbnailLocalPath)
+  video.thumbnail=thumbnail.url
+  video.description=description
+  await video.save({validateBeforeUser:false})
+  res.status(200)
+  .json(
+    new ApiResponse(200,{video},"Details changed successfully")
+  )
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  //TODO: delete video
-});
-
-const togglePublishStatus = asyncHandler(async (req, res) => {
-  const { videoId } = req.params;
+  if(!videoId) throw new ApiError(400,"Please provide video id")
+  const video=await Video.findById(new mongoose.Types.ObjectId(videoId))
+  await Video.deleteOne(video)
+  deleteFromCloudinary(video)
+  res.status(200).json(
+    new ApiResponse(200,{},"Video deleted successfully")
+  )
 });
 
 export {
@@ -87,5 +107,4 @@ export {
   getVideoById,
   updateVideo,
   deleteVideo,
-  togglePublishStatus,
 };
