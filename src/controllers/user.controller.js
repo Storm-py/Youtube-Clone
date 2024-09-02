@@ -215,7 +215,7 @@ const getUserChannelProfile=asyncHandler(async (req,res)=>{
     }
 ])
     if(!channel?.length){
-        throw new ApiError(400,"Channel does not exist")
+        throw new ApiError(400,"You have not subscribed to any channel")
     }
     return res.status(200)
     .json(
