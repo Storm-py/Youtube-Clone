@@ -42,7 +42,6 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         }
     }
 ])
-console.log(likeAvailable)
     if(!likeAvailable[0].isLiked){
         const like= await Like.create({
             video:videoId,
@@ -72,7 +71,6 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
             }
         }
     ])
-    console.log(checkComment)
     if(!checkComment) throw new ApiError(400,"Comment not found")
         const commentAvailable =await Comment.aggregate([
         {

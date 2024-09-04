@@ -38,7 +38,6 @@ const registerUser=asyncHandler(async (req,res)=>{
 
     const avatarLocalPath= req.files?.avatar[0]?.path;
     // const coverImageLocalPath= req.files?.coverImage[0]?.path ;
-    console.log(req.files)
 
     let coverImageLocalPath;
     if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0 ){
@@ -268,7 +267,6 @@ const getWatchHistory=asyncHandler(async (req,res)=>{
 })
 const getCurrentUser=asyncHandler(async (req,res)=>{
     const user=await User.findById(req.user._id)
-    console.log(user)
     if(!user) throw new ApiError(200,"User not Found")
     return res.status(200).json(
         new ApiResponse(200,{user},"User Fetched Successfully")

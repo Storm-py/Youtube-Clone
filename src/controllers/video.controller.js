@@ -55,7 +55,6 @@ const publishAVideo = asyncHandler(async (req, res) => {
     duration: videoFile.duration,
     owner: req.user._id
   });
-  console.log(req.user._id)
   res
     .status(200)
     .json(new ApiResponse(200, { video }, "Video Uploaded Successfully"));
