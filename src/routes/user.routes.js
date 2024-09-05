@@ -23,7 +23,7 @@ router.route('/login').post(
 router.route("/logout").post(verifyJWT,logoutUser)
 router.route('/refresh-token').post(refreshAccessToken)
 router.route("/change-password").post(verifyJWT,changeCurrentPassword)
-router.route('/get-count/:username').post(getUserChannelProfile)
+router.route('/get-count/:username').post(verifyJWT,getUserChannelProfile)
 router.route('/watch-history').post(verifyJWT,getWatchHistory)
 router.route('current-user').get(verifyJWT,getCurrentUser)
 router.route('update-details').patch(verifyJWT,updateAccountDetails)

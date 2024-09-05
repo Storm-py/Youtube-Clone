@@ -97,7 +97,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
         }
     ])
     if(Subscribers.length == 0) throw new ApiResponse(400,{},"No subscribers")
-    else res.status(200).json( new ApiResponse(200,{Subscribers},"Fetched Successfully"))
+    else res.status(200).json( new ApiResponse(200,Subscribers,"Fetched Successfully"))
 })
 
 
@@ -126,6 +126,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
         },
         {
             $project:{
+                subscribedTo:1,
                 subscribedToChannelsCount:1
             }
         }

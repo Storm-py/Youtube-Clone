@@ -65,10 +65,39 @@ const getVideoById = asyncHandler(async (req, res) => {
   if(!videoId) throw new ApiError(400,"Id not found")
   const video= await Video.findById(videoId)
   if(!video) throw new ApiError(400,"Video not found")
-  res.status(200)
-  .json(
-    new ApiResponse(200,{video},"Video Fetched Successfully")
-  )
+  const checkView=await Video.aggregate([
+    {
+      $match:{
+        _id:new mongoose.Types.ObjectId(videoId)
+      }
+    },
+    {
+     $addFields:{
+      isViewed:{
+        $cond:{
+          if:{$in:[req.user._id,"$views"]},
+          then:true,
+          else:false
+        }
+      }
+     }
+    },
+    {
+      $project:{
+        isViewed:1
+      }
+    }
+])
+  if(checkView[0].isViewed){
+    res.status(200).json(
+      new ApiResponse(200,true,"User has already viewed this video")
+    )
+  }
+  if(!checkView[0].isViewed){
+    video.views.push(req.user._id)
+   await video.save()
+    res.status(200).json(new ApiResponse(200,checkView,"User View Added to the video"))
+  }
 });
 
 const updateVideo = asyncHandler(async (req, res) => {

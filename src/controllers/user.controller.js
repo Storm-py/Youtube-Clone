@@ -122,30 +122,54 @@ const logoutUser=asyncHandler(async (req,res)=>{
     return res.status(200).clearCookie("accessToken",options)
     .clearCookie("refreshToken",options).json(new ApiResponse(200,{},"User logged Out"))
 })
-const refreshAccessToken=asyncHandler(async (req,res)=>{
-    const incomingRefreshToken= req.cookies?.refreshToken || req.body.refreshToken
-    if(!incomingRefreshToken) throw new ApiError(401,"You dont have the token")
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
+
+    if (!incomingRefreshToken) {
+        throw new ApiError(401, "unauthorized request")
+    }
+
     try {
-        const decodedToken=jwt.verify(incomingRefreshToken,process.env.REFRESH_TOKEN_SECRET)
-        const user=await User.findById(decodedToken?._id)
-        if(!user) throw new ApiError(401,"Invlaid Refresh Token")
-        if(incomingRefreshToken !== user?.refreshToken) throw new ApiError(401,"Refresh Token is expired or Used")
-        const options={
-            httpOnly:true,
-            secure:true
+        const decodedToken = jwt.verify(
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        )
+    
+        const user = await User.findById(decodedToken?._id)
+    
+        if (!user) {
+            throw new ApiError(401, "Invalid refresh token")
         }
-        const {accessToken,newRefreshToken}=await generateAccessAndRefreshTokens(user._id)
+    
+        if (incomingRefreshToken !== user?.refreshToken) {
+            throw new ApiError(401, "Refresh token is expired or used")
+            
+        }
+    
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+    
+        const {accessToken, newRefreshToken} = await generateAccessAndRefereshTokens(user._id)
+    
         return res
         .status(200)
-        .cookie("accessToken",accessToken,options)
-        .cookie("refreshToken",newRefreshToken,options)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", newRefreshToken, options)
         .json(
-            new ApiResponse(200,{accessToken,newRefreshToken},"Access Token Refreshed")
+            new ApiResponse(
+                200, 
+                {accessToken, refreshToken: newRefreshToken},
+                "Access token refreshed"
+            )
         )
     } catch (error) {
-        throw new ApiError(400,error?.message)
+        throw new ApiError(401, error?.message || "Invalid refresh token")
     }
+
 })
+
 const changeCurrentPassword=asyncHandler(async (req,res)=>{
     const {oldPassword,newPassword}=req.body
     const user=await User.findById(req.user?._id)
@@ -160,8 +184,8 @@ const changeCurrentPassword=asyncHandler(async (req,res)=>{
 
 })
 const getUserChannelProfile=asyncHandler(async (req,res)=>{
-    const {username}=req.query || req.params
-    if(!username?.trim()) throw new ApiError(400,"User not Available")
+    const {username}=req.params
+    if(!username) throw new ApiError(400,"User not Available")
     const channel=await User.aggregate([
     {
         $match:{
@@ -203,6 +227,7 @@ const getUserChannelProfile=asyncHandler(async (req,res)=>{
     },
     {
         $project:{
+            subscribers:1,
             fullName:1,
             username:1,
             subscribersCount:1,
@@ -213,6 +238,7 @@ const getUserChannelProfile=asyncHandler(async (req,res)=>{
         }
     }
 ])
+console.log(req.user)
     if(!channel?.length){
         throw new ApiError(400,"You have not subscribed to any channel")
     }
