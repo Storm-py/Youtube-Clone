@@ -8,7 +8,6 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 
 const getChannelStats = asyncHandler(async (req, res) => {
-    // TODO: Get the channel stats like total video views, total subscribers, total videos, total likes etc.
     const channelStats = await User.aggregate([
         {
             $match: {
@@ -43,18 +42,28 @@ const getChannelStats = asyncHandler(async (req, res) => {
             }
         },
         {
+            $lookup: {
+                from: "videos",
+                localField: "videos._id",
+                foreignField: "views",
+                as: "videos.likes"
+            }
+        },
+        {
             $group: {
                 _id: "$_id",
                 totalVideos: { $sum: 1 },
                 totalSubscribers: { $first: { $size: "$totalSubscribers" } },
-                totalLikesOnVideos: { $sum: { $size: "$videos.likes" } }
+                totalLikesOnVideos: { $sum: { $size: "$videos.likes" } },
+                totalViewsOnVideos:{$sum:{$size:"$videos.views"}}
             }
         },
         {
             $project: {
                 totalVideos: 1,
                 totalSubscribers: 1,
-                totalLikesOnVideos: 1
+                totalLikesOnVideos: 1,
+                totalViewsOnVideos:1
             }
         }
     ]);
