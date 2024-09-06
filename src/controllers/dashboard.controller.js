@@ -42,14 +42,6 @@ const getChannelStats = asyncHandler(async (req, res) => {
             }
         },
         {
-            $lookup: {
-                from: "videos",
-                localField: "videos._id",
-                foreignField: "views",
-                as: "videos.likes"
-            }
-        },
-        {
             $group: {
                 _id: "$_id",
                 totalVideos: { $sum: 1 },
